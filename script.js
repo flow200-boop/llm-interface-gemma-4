@@ -1,360 +1,19 @@
 /* ============================================
    Gemma Chat Interface — Application Logic
+   Powered by Ollama + Gemma 4
    ============================================ */
 
 'use strict';
 
 // ============================================
-// Mock Responses
+// Model Name Mapping
 // ============================================
 
-const MOCK_RESPONSES = [
-  {
-    keywords: ['quantum', 'computing', 'physics'],
-    response: `That's a fascinating topic! Let me break it down.
-
-**Quantum computing** leverages the principles of quantum mechanics to process information in fundamentally new ways.
-
-### Key Concepts:
-- **Qubits**: Unlike classical bits (0 or 1), qubits can exist in **superposition** — being both 0 and 1 simultaneously
-- **Entanglement**: Two qubits can be linked so that the state of one instantly affects the other, no matter the distance
-- **Quantum gates**: Operations that manipulate qubits, similar to logic gates in classical computers
-
-### Why It Matters:
-Quantum computers excel at certain problems where classical computers struggle, such as:
-- Factoring large numbers (RSA encryption)
-- Drug molecule simulation
-- Optimization problems
-- Machine learning at scale
-
-We're still in the **NISQ** (Noisy Intermediate-Scale Quantum) era, meaning today's quantum computers have limited qubits and significant error rates. But progress is accelerating rapidly!`
-  },
-  {
-    keywords: ['python', 'function', 'code', 'sort', 'programming'],
-    response: `Here's a clean Python function to sort a list using the built-in sort, plus a custom implementation for learning:
-
-### Using built-in sort:
-\`\`\`python
-def sort_list(items, reverse=False):
-    \"\"\"Sort a list in ascending order by default.\"\"\"
-    return sorted(items, reverse=reverse)
-
-# Example usage
-numbers = [64, 34, 25, 12, 22, 11, 90]
-sorted_nums = sort_list(numbers)
-print(f"Original: {numbers}")
-print(f"Sorted:   {sorted_nums}")
-\`\`\`
-
-### Custom quicksort implementation:
-\`\`\`python
-def quicksort(arr):
-    \"\"\"In-place quicksort algorithm.\"\"\"
-    if len(arr) <= 1:
-        return arr
-
-    pivot = arr[len(arr) // 2]
-    left = [x for x in arr if x < pivot]
-    middle = [x for x in arr if x == pivot]
-    right = [x for x in arr if x > pivot]
-
-    return quicksort(left) + middle + quicksort(right)
-
-# Example
-data = [3, 6, 8, 10, 1, 2, 1]
-print(quicksort(data))  # [1, 1, 2, 3, 6, 8, 10]
-\`\`\`
-
-Python's built-in \`sorted()\` uses **Timsort** — a hybrid sorting algorithm derived from merge sort and insertion sort — which is highly efficient with O(n log n) complexity.`
-  },
-  {
-    keywords: ['api', 'rest', 'design', 'endpoint'],
-    response: `Great question! Here are the key best practices for designing REST APIs:
-
-## 1. Use Consistent Naming Conventions
-- Use **nouns** for resources: \`/users\`, \`/orders\`
-- Use **plural names**: \`/api/products\` not \`/api/product\`
-- Use **kebab-case** for multi-word: \`/order-items\`
-
-## 2. Leverage HTTP Methods Correctly
-\`\`\`
-GET    /users        # List users
-POST   /users        # Create user
-GET    /users/:id    # Get user by ID
-PUT    /users/:id    # Update user (full)
-PATCH  /users/:id    # Partial update
-DELETE /users/:id    # Delete user
-\`\`\`
-
-## 3. Use Proper Status Codes
-| Code | Meaning |
-|------|---------|
-| 200 | OK — successful GET, PUT, PATCH |
-| 201 | Created — successful POST |
-| 204 | No Content — successful DELETE |
-| 400 | Bad Request — invalid input |
-| 401 | Unauthorized — missing auth |
-| 404 | Not Found — resource doesn't exist |
-| 429 | Too Many Requests — rate limited |
-| 500 | Internal Server Error |
-
-## 4. Version Your API
-\`\`\`
-GET /api/v1/users
-GET /api/v2/users
-\`\`\`
-
-## 5. Paginate Collections
-\`\`\`json
-GET /api/users?page=2&limit=20
-{
-  "data": [...],
-  "pagination": {
-    "page": 2,
-    "limit": 20,
-    "total": 150,
-    "hasMore": true
-  }
-}
-\`\`\`
-
-Would you like me to dive deeper into any of these topics? Authentication patterns maybe?`
-  },
-  {
-    keywords: ['travel', 'trip', 'paris', 'vacation', 'weekend'],
-    response: `Here's a **2-day weekend itinerary for Paris** that balances iconic sights with local charm!
-
-## Day 1: Iconic Paris 🇫🇷
-
-**Morning (9am - 12pm)**
-- ☕ Start with a café au lait at a local *boulangerie*
-- 🗼 Visit the **Eiffel Tower** — book tickets in advance!
-- 🌳 Stroll through the **Champ de Mars** gardens
-
-**Afternoon (12pm - 5pm)**
-- 🥐 Lunch in **Le Marais** district — try a classic croque monsieur
-- 🎨 Explore the **Louvre Museum** (book timed entry)
-- 🚶 Walk along the **Seine River**
-
-**Evening (7pm onwards)**
-- 🍷 Dinner in **Montmartre** near Sacré-Cœur
-- 🌆 Evening view of Paris from the Sacré-Cœur steps
-
-## Day 2: Culture & Charm
-
-**Morning**
-- 🏛️ **Musée d'Orsay** for Impressionist art
-- 🛍️ Browse **Rue des Martyrs** market street
-
-**Afternoon**
-- 🥐 Macaron tasting at **Ladurée**
-- 🎭 **Notre-Dame Cathedral** exterior + Île de la Cité
-
-**Evening**
-- 🚢 **Seine river cruise** at sunset — magical!
-- 🥂 Final dinner near **Place de la Concorde**
-
-### Pro Tips:
-- Get the **Navigo Découverte** pass for unlimited metro travel
-- Pre-book museums (they sell out!)
-- Learn a few phrases: *Bonjour, Merci, S'il vous plaît*`
-  },
-  {
-    keywords: ['default', 'hello', 'hi', 'hey', 'help', ''],
-    response: `Hello! 👋 I'm Gemma, your AI assistant. I'm here to help with:
-
-- 💻 **Coding** — writing, debugging, explaining code
-- 📚 **Learning** — breaking down complex topics
-- ✍️ **Writing** — drafting emails, articles, creative content
-- 🤔 **Brainstorming** — ideas, solutions, strategies
-- 📊 **Analysis** — data interpretation, pros and cons
-
-What would you like help with today?`
-  },
-  {
-    keywords: ['javascript', 'js', 'react', 'frontend', 'web'],
-    response: `JavaScript is incredibly versatile! Here's a quick overview of modern JS concepts:
-
-### Modern JavaScript Features
-
-**Arrow Functions:**
-\`\`\`javascript
-// Traditional
-function add(a, b) { return a + b; }
-
-// Arrow function
-const add = (a, b) => a + b;
-
-// With single parameter (no parens needed)
-const double = x => x * 2;
-\`\`\`
-
-**Destructuring:**
-\`\`\`javascript
-// Object destructuring
-const user = { name: 'Alice', age: 30, city: 'NYC' };
-const { name, age } = user;
-
-// Array destructuring
-const colors = ['red', 'green', 'blue'];
-const [first, ...rest] = colors;
-\`\`\`
-
-**Async/Await:**
-\`\`\`javascript
-const fetchUserData = async (userId) => {
-  try {
-    const response = await fetch(\`/api/users/$\{userId}\`);
-    if (!response.ok) throw new Error('Network error');
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch:', error);
-    throw error;
-  }
+const MODEL_MAP = {
+  'gemma-4': 'gemma4:latest',
+  'gemma-4-light': 'gemma4:e4b',
+  'gemma-4-pro': 'gemma4:latest',
 };
-\`\`\`
-
-**Optional Chaining & Nullish Coalescing:**
-\`\`\`javascript
-const city = user?.address?.city ?? 'Unknown';
-\`\`\`
-
-Want me to dive deeper into any of these topics?`
-  },
-  {
-    keywords: ['css', 'design', 'styling', 'layout', 'responsive'],
-    response: `CSS has evolved tremendously! Here are some modern CSS techniques:
-
-### CSS Grid Layout
-\`\`\`css
-.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 24px;
-}
-\`\`\`
-
-### Flexbox Centering
-\`\`\`css
-.centered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
-\`\`\`
-
-### Custom Properties (Variables)
-\`\`\`css
-:root {
-  --primary: #7c6ff7;
-  --surface: #1a1a2e;
-  --radius: 12px;
-}
-
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
-}
-\`\`\`
-
-### Container Queries
-\`\`\`css
-.card-container {
-  container-type: inline-size;
-}
-
-@container (min-width: 400px) {
-  .card {
-    flex-direction: row;
-  }
-}
-\`\`\`
-
-### Modern Reset
-\`\`\`css
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-\`\`\`
-
-CSS is incredibly powerful these days — you can create full layouts without a single media query!`
-  },
-  {
-    keywords: ['database', 'sql', 'mongodb', 'data', 'storage'],
-    response: `Let me break down the key differences between SQL and NoSQL databases:
-
-## SQL Databases (e.g., PostgreSQL, MySQL)
-- **Structured** data with predefined schemas
-- **Relationships** between tables via foreign keys
-- **ACID** compliant (Atomicity, Consistency, Isolation, Durability)
-- Great for: financial systems, ERP, complex queries
-
-\`\`\`sql
-SELECT users.name, orders.total
-FROM users
-JOIN orders ON users.id = orders.user_id
-WHERE users.created_at > '2024-01-01'
-GROUP BY users.id
-HAVING COUNT(orders.id) > 5;
-\`\`\`
-
-## NoSQL Databases (e.g., MongoDB)
-- **Flexible** schemas (document-based)
-- **Horizontal scaling** built-in
-- Great for: real-time apps, IoT, content management
-
-\`\`\`javascript
-// MongoDB document
-{
-  _id: ObjectId("..."),
-  name: "Alice",
-  orders: [
-    { total: 45.99, items: 3 },
-    { total: 120.00, items: 5 }
-  ]
-}
-\`\`\`
-
-### When to Choose What:
-- **Use SQL** when data integrity and relationships matter most
-- **Use NoSQL** when you need flexibility and scalability at speed
-- **Many modern apps** use both — a **polyglot persistence** approach
-
-What's your use case? I can give more specific recommendations!`
-  },
-  {
-    keywords: ['explain', 'what is', 'meaning', 'define'],
-    response: `I'd be happy to explain! Could you be a bit more specific about what you'd like me to explain?
-
-In the meantime, here are some topics I can help with:
-
-- 🔬 **Science & Technology** — AI, quantum computing, cybersecurity
-- 💻 **Programming** — any language, framework, or concept
-- 📐 **Mathematics** — from algebra to calculus and statistics
-- 🌍 **General Knowledge** — history, economics, philosophy
-- 🎨 **Creative** — writing tips, design principles, music theory
-
-Just ask away and I'll give you a clear, thorough explanation with examples!`
-  },
-  {
-    keywords: ['thanks', 'thank you', 'great', 'awesome', 'cool', 'nice'],
-    response: `You're very welcome! 😊 I'm glad I could help!
-
-Feel free to ask if you have any follow-up questions or need anything else. I'm here whenever you need me!
-
-What would you like to explore next?`
-  }
-];
 
 // ============================================
 // State
@@ -482,54 +141,6 @@ function renderMarkdown(text) {
 }
 
 // ============================================
-// Find Best Mock Response
-// ============================================
-
-function findResponse(userMessage) {
-  const lower = userMessage.toLowerCase();
-
-  // Check for keyword matches
-  for (const entry of MOCK_RESPONSES) {
-    for (const keyword of entry.keywords) {
-      if (keyword && lower.includes(keyword)) {
-        return entry.response;
-      }
-    }
-  }
-
-  // Return a general fallback response
-  const fallbacks = [
-    `That's an interesting question! Let me share my thoughts on this.
-
-Here are a few perspectives to consider:
-
-1. **From a technical standpoint** — this really depends on your specific context and requirements. The key is to understand the trade-offs involved.
-
-2. **A practical approach** — I'd recommend starting with a minimal viable solution and iterating based on feedback. You'll learn more from real-world usage than from planning alone.
-
-3. **Looking ahead** — keep an eye on emerging trends in this space. The landscape is evolving rapidly, and staying flexible is important.
-
-Would you like me to explore any particular aspect of this in more depth? I'm happy to dive deeper into whatever interests you most!`,
-
-    `Great question! Let me help you think through this.
-
-**Here's my take:**
-
-The most effective approach depends on your specific goals and constraints. There are several angles to consider:
-
-- 🎯 **What are you trying to achieve?** The "best" solution is the one that aligns with your objectives
-- 🔧 **What tools do you have available?** Sometimes the optimal choice is what your team already knows well
-- 📈 **How will this scale?** Think about future growth, not just immediate needs
-
-**My recommendation:** Start with something simple that works, then refine based on real feedback. Perfect is the enemy of good!
-
-Let me know if you'd like me to elaborate on any specific aspect.`,
-  ];
-
-  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
-}
-
-// ============================================
 // Generate Suggested Follow-ups
 // ============================================
 
@@ -582,62 +193,7 @@ function addMessageToDOM(role, content, isStreaming = false) {
 }
 
 // ============================================
-// Streaming Typing Effect
-// ============================================
-
-async function streamResponse(messageElement, fullText) {
-  const bubble = messageElement.querySelector('.message-bubble');
-  let displayed = '';
-  const chars = fullText.split('');
-  let index = 0;
-
-  // Show cursor
-  bubble.innerHTML = '<span class="typing-cursor"></span>';
-
-  return new Promise((resolve) => {
-    function typeNext() {
-      if (index >= chars.length) {
-        // Done — render full markdown and remove cursor
-        bubble.innerHTML = renderMarkdown(fullText);
-        resolve();
-        return;
-      }
-
-      // Add next chunk
-      const chunkSize = Math.floor(Math.random() * 3) + 1;
-      for (let i = 0; i < chunkSize && index < chars.length; i++) {
-        displayed += chars[index];
-        index++;
-      }
-
-      // Show as plain text with cursor
-      const displayText = escapeHtml(displayed);
-      bubble.innerHTML = `<p>${displayText}</p><span class="typing-cursor"></span>`;
-
-      // Scroll as text appears
-      scrollToBottom();
-
-      // Dynamic delay — slower for punctuation, faster for regular chars
-      const char = chars[index - 1] || '';
-      let delay = 15 + Math.random() * 20; // 15-35ms base
-
-      if (char === '.' || char === '!' || char === '?') {
-        delay = 200;
-      } else if (char === ',' || char === ';' || char === ':') {
-        delay = 100;
-      } else if (char === '\n') {
-        delay = 80;
-      }
-
-      setTimeout(typeNext, delay);
-    }
-
-    typeNext();
-  });
-}
-
-// ============================================
-// Send Message
+// Send Message (now calls Ollama via backend)
 // ============================================
 
 async function sendMessage(text) {
@@ -652,7 +208,7 @@ async function sendMessage(text) {
     state.hasSentMessages = true;
   }
 
-  // Add user message
+  // Add user message to DOM and state
   addMessageToDOM('user', message);
   state.messages.push({ role: 'user', content: message });
 
@@ -662,28 +218,94 @@ async function sendMessage(text) {
   dom.chatInput.style.height = 'auto';
   state.isTyping = true;
 
-  // Show typing indicator
+  // Show typing indicator while waiting for first chunk
   dom.typingIndicator.classList.remove('hidden');
   scrollToBottom();
 
-  // Simulate "thinking" delay
-  const thinkingTime = 500 + Math.random() * 1000;
-  await new Promise((r) => setTimeout(r, thinkingTime));
+  try {
+    // Determine model from selector
+    const uiModel = dom.modelSelect.value;
+    const ollamaModel = MODEL_MAP[uiModel] || 'gemma4:latest';
 
-  // Hide typing indicator
-  dom.typingIndicator.classList.add('hidden');
+    // Send request to our backend (which proxies to Ollama)
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: state.messages,
+        model: ollamaModel,
+      }),
+    });
 
-  // Get response
-  const responseText = findResponse(message);
+    if (!response.ok) {
+      throw new Error(`Server error (${response.status})`);
+    }
 
-  // Add assistant message with streaming
-  const msgElement = addMessageToDOM('assistant', '', true);
-  await streamResponse(msgElement, responseText);
+    // Hide typing indicator now that we're about to receive data
+    dom.typingIndicator.classList.add('hidden');
 
-  // Add suggested follow-ups
-  addFollowups(msgElement);
+    // Create the assistant message element with just a cursor
+    const msgElement = addMessageToDOM('assistant', '', true);
+    const bubble = msgElement.querySelector('.message-bubble');
+    bubble.innerHTML = '<span class="typing-cursor"></span>';
 
-  state.messages.push({ role: 'assistant', content: responseText });
+    // Read the streaming response
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
+            if (data.content) {
+              fullText += data.content;
+              // Show plain text with blinking cursor
+              const displayText = escapeHtml(fullText);
+              bubble.innerHTML = `<p>${displayText}</p><span class="typing-cursor"></span>`;
+              scrollToBottom();
+            }
+
+            if (data.done) {
+              // Streaming complete — render full markdown
+              bubble.innerHTML = renderMarkdown(fullText);
+            }
+          } catch {
+            // skip malformed lines
+          }
+        }
+      }
+    }
+
+    // Add follow-up suggestions
+    addFollowups(msgElement);
+    state.messages.push({ role: 'assistant', content: fullText });
+
+  } catch (error) {
+    // Hide typing indicator
+    dom.typingIndicator.classList.add('hidden');
+
+    // Show error message
+    const errorText = `Sorry, I couldn't reach the Gemma 4 model.\n\n**Possible causes:**\n- Ollama is not running (start it first)\n- The backend server is down\n- Network issue\n\n**Error details:** ${escapeHtml(error.message)}`;
+    const msgElement = addMessageToDOM('assistant', '');
+    msgElement.querySelector('.message-bubble').innerHTML = renderMarkdown(errorText);
+    state.messages.push({ role: 'assistant', content: errorText });
+  }
+
   state.isTyping = false;
 
   // Re-enable input
@@ -811,6 +433,27 @@ function clearConversation() {
 }
 
 // ============================================
+// Connection Status Check
+// ============================================
+
+async function checkConnection() {
+  try {
+    const response = await fetch('/api/status');
+    const data = await response.json();
+
+    if (data.available && data.hasGemma) {
+      console.log('%c\u2713 Gemma 4 is ready', 'color: #4ade80; font-weight: bold;');
+    } else if (data.available) {
+      console.warn('%cGemma model not found. Available: ' + data.models.join(', '), 'color: #fbbf24;');
+    } else {
+      console.warn('%cOllama is not running. Start it with: ollama serve', 'color: #fbbf24;');
+    }
+  } catch {
+    console.warn('%cBackend server not reachable. Make sure the server is running.', 'color: #ef4444;');
+  }
+}
+
+// ============================================
 // Input Event Handlers
 // ============================================
 
@@ -888,7 +531,7 @@ dom.messagesContainer.addEventListener('scroll', () => {
 
 dom.modelSelect.addEventListener('change', () => {
   const selected = dom.modelSelect.value;
-  console.log(`Model switched to: ${selected}`);
+  console.log(`Model switched to: ${MODEL_MAP[selected] || selected}`);
 });
 
 // ============================================
@@ -904,5 +547,7 @@ if (firstHistoryItem) {
 // Focus input on load
 dom.chatInput.focus();
 
-console.log('%c\u2666 Gemma Chat %c v1.0', 'color: #7c6ff7; font-weight: bold; font-size: 14px;', 'color: #a0a0c0; font-size: 12px;');
-console.log('%cBuilt with \u2661 by you', 'color: #6a6a8a; font-size: 11px;');
+// Check connection status
+checkConnection();
+
+console.log('%c\u2666 Gemma Chat %c v2.0 — Powered by Ollama', 'color: #7c6ff7; font-weight: bold; font-size: 14px;', 'color: #a0a0c0; font-size: 12px;');
