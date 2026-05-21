@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemma Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">&#9670;</span>
+          <span class="logo-text">Gemma Chat</span>
+        </div>
+        <button class="new-chat-btn" id="newChatBtn" title="New conversation">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="chat-history" id="chatHistory">
+        <div class="history-item active" data-id="1">
+          <svg class="history-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="history-title">New conversation</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="model-selector">
+          <label class="model-label">Model</label>
+          <select id="modelSelect">
+            <option value="gemma-4">Gemma 4</option>
+            <option value="gemma-4-light">Gemma 4 Light</option>
+            <option value="gemma-4-pro">Gemma 4 Pro</option>
+          </select>
+        </div>
+        <button class="clear-btn" id="clearBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Clear conversation
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="chat-area">
+      <!-- Messages -->
+      <div class="messages-container" id="messagesContainer">
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-logo">
+            <span class="welcome-icon">&#9670;</span>
+          </div>
+          <h1 class="welcome-title">Hello! How can I help you today?</h1>
+          <p class="welcome-subtitle">I'm Gemma, your AI assistant. Ask me anything!</p>
+          <div class="suggestion-chips" id="suggestionChips">
+            <button class="chip" data-prompt="Explain quantum computing in simple terms">&#x1F4A1; Explain quantum computing</button>
+            <button class="chip" data-prompt="Write a Python function to sort a list">&#x1F4BB; Write a Python function</button>
+            <button class="chip" data-prompt="What are the best practices for REST API design?">&#x1F527; REST API best practices</button>
+            <button class="chip" data-prompt="Help me plan a weekend trip to Paris">&#x2708;&#xFE0F; Plan a Paris trip</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator hidden" id="typingIndicator">
+        <div class="typing-avatar">&#9670;</div>
+        <div class="typing-dots">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="chatInput"
+            class="chat-input"
+            placeholder="Message Gemma..."
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <p class="disclaimer">Gemma may produce inaccurate information. Verify important facts.</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
